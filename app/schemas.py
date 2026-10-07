@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
+from datetime import datetime
 
 class UserCreate(BaseModel):
     full_name: str
@@ -55,6 +56,7 @@ class ProductCreate(BaseModel):
     recommendation_status: Optional[str] = "active"
     image_url: Optional[str] = None
 
+
 class ProductOut(BaseModel):
     product_id: int
     brand: str
@@ -69,7 +71,7 @@ class ProductOut(BaseModel):
     ingredient_overlap_group: Optional[str]
     validation_status: str
     recommendation_status: str
-    image_url: Optional[str] = None
+    image_url: Optional[str]
 
     class Config:
         from_attributes = True
@@ -119,3 +121,46 @@ class HistoryEntry(BaseModel):
     concerns: Optional[List[str]]
     severity: Optional[str]
     outcome: str  # "recommendation" or "referral"
+
+class AdminLogin(BaseModel):
+    username: str
+    password: str
+
+class AdminOut(BaseModel):
+    admin_id: int
+    username: str
+    role: str
+
+    class Config:
+        from_attributes = True
+
+class UserAdminOut(BaseModel):
+    user_id: int
+    full_name: str
+    email: str
+    age: int
+    sex: Optional[str]
+    status: str
+    phone: Optional[str]
+    occupation: Optional[str]
+    location: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class UserAdminUpdate(BaseModel):
+    full_name: str
+    email: str
+    age: int
+    sex: Optional[str] = None
+    phone: Optional[str] = None
+    occupation: Optional[str] = None
+    location: Optional[str] = None
+
+class AdminStats(BaseModel):
+    total_users: int
+    active_users: int
+    total_products: int
+    active_products: int
+    recent_registrations: int

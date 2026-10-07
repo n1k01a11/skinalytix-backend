@@ -11,6 +11,10 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     age = Column(Integer, nullable=False)
     sex = Column(String(30))
+    status = Column(String(20), default="active")
+    phone = Column(String(30))
+    occupation = Column(String(100))
+    location = Column(String(150))
     created_at = Column(TIMESTAMP, server_default=func.now())
 
 class SkinAnalysis(Base):
@@ -77,3 +81,10 @@ class Referral(Base):
     profile_id = Column(Integer, ForeignKey("skin_profiles.profile_id", ondelete="SET NULL"))
     reason = Column(Text)
     referred_at = Column(TIMESTAMP, server_default=func.now())
+
+class AdminUser(Base):
+    __tablename__ = "admin_users"
+    admin_id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(100), unique=True, nullable=False)
+    password_hash = Column(String(255), nullable=False)
+    role = Column(String(30), default="admin")

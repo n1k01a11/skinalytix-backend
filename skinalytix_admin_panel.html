@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SKINALYTIX Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F2F6F1;
+    --surface: #FFFFFF;
+    --primary: #3F6B52;
+    --primary-dark: #223A2C;
+    --primary-mid: #2C4E3B;
+    --secondary: #E8A87C;
+    --text: #23291F;
+    --muted: #6B7566;
+    --line: #E3E8DE;
+    --danger: #D9534F;
+    --danger-bg: #FBEAEA;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  h1, h2, .serif { font-family: 'Fraunces', Georgia, serif; }
+  button { font-family: inherit; cursor: pointer; border: none; }
+  input, select, textarea { font-family: inherit; }
+
+  /* ---------- Login ---------- */
+  #loginScreen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .login-card { background: var(--surface); border-radius: 18px; padding: 40px 36px; width: 100%; max-width: 380px; box-shadow: 0 16px 50px rgba(34,58,44,0.12); text-align: center; }
+  .login-mark { width: 52px; height: 52px; margin: 0 auto 14px; background: var(--primary); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; }
+  .login-card h1 { font-size: 20px; color: var(--primary-dark); margin-bottom: 4px; }
+  .login-card .sub { font-size: 12px; color: var(--muted); margin-bottom: 26px; }
+  .field { text-align: left; margin-bottom: 14px; }
+  .field label { display: block; font-size: 11.5px; color: var(--muted); margin-bottom: 5px; }
+  .field input, .field select { width: 100%; padding: 11px 13px; border: 1px solid var(--line); border-radius: 9px; font-size: 13.5px; background: var(--bg); color: var(--text); }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--primary); background: #fff; }
+  .btn-primary { width: 100%; padding: 12px 0; background: var(--primary); color: white; border-radius: 9px; font-size: 14px; font-weight: 600; margin-top: 8px; }
+  .btn-primary:hover { background: var(--primary-mid); }
+  .forgot-link { display: block; margin-top: 16px; font-size: 12px; color: var(--muted); text-decoration: none; cursor: pointer; }
+  .forgot-link:hover { color: var(--primary); }
+  .error-text { color: var(--danger); font-size: 12px; margin-top: 10px; display: none; }
+
+  /* ---------- Shell ---------- */
+  #dashboard { display: none; }
+  .shell { display: flex; min-height: 100vh; }
+  .sidebar { width: 218px; background: var(--primary-dark); color: white; padding: 22px 14px; display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 26px; }
+  .sidebar-brand .mark { width: 32px; height: 32px; background: var(--primary); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .sidebar-brand .t1 { font-size: 14px; font-weight: 700; letter-spacing: 0.3px; }
+  .sidebar-brand .t2 { font-size: 9.5px; color: rgba(255,255,255,0.55); letter-spacing: 0.5px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 9px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.72); background: none; width: 100%; text-align: left; margin-bottom: 3px; }
+  .nav-item:hover { background: rgba(255,255,255,0.07); color: white; }
+  .nav-item.active { background: var(--primary); color: white; }
+  .sidebar-footer { margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); }
+
+  .main { flex: 1; padding: 30px 34px; overflow-x: auto; }
+  .page-title { font-size: 21px; color: var(--primary-dark); font-weight: 600; margin-bottom: 2px; }
+  .page-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 22px; }
+  .back-link { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; color: var(--muted); margin-bottom: 14px; background: none; }
+  .back-link:hover { color: var(--primary); }
+
+  /* ---------- Dashboard ---------- */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 26px; }
+  .stat-card { background: var(--surface); border-radius: 14px; padding: 18px 20px; box-shadow: 0 4px 16px rgba(34,58,44,0.05); }
+  .stat-card .label { font-size: 11.5px; color: var(--muted); margin-bottom: 6px; }
+  .stat-card .value { font-size: 26px; font-weight: 700; color: var(--primary-dark); font-family: 'Fraunces', serif; }
+  .stat-card .sub { font-size: 11px; color: var(--primary); margin-top: 4px; font-weight: 600; }
+  .quick-actions { background: var(--surface); border-radius: 14px; padding: 20px; box-shadow: 0 4px 16px rgba(34,58,44,0.05); max-width: 320px; }
+  .quick-actions h3 { font-size: 13px; color: var(--primary-dark); margin-bottom: 12px; }
+  .quick-actions button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 12px; background: var(--bg); border-radius: 9px; font-size: 13px; color: var(--text); margin-bottom: 8px; }
+  .quick-actions button:hover { background: #E7EEE4; }
+
+  /* ---------- Table ---------- */
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+  .search-box { position: relative; flex: 1; max-width: 320px; }
+  .search-box input { width: 100%; padding: 10px 14px 10px 34px; border: 1px solid var(--line); border-radius: 9px; font-size: 13px; background: var(--surface); }
+  .search-box input:focus { outline: none; border-color: var(--primary); }
+  .search-box .icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; }
+  .btn-add { padding: 10px 18px; background: var(--primary); color: white; border-radius: 9px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .btn-add:hover { background: var(--primary-mid); }
+
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 14px; overflow: hidden; box-shadow: 0 4px 16px rgba(34,58,44,0.05); }
+  thead { background: var(--bg); }
+  th { text-align: left; padding: 12px 16px; font-size: 10.5px; color: var(--muted); font-weight: 700; letter-spacing: 0.3px; border-bottom: 1px solid var(--line); }
+  td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #FAFBF8; }
+
+  .avatar-circle { width: 34px; height: 34px; border-radius: 99px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700; flex-shrink: 0; }
+  .name-cell { display: flex; align-items: center; gap: 10px; }
+  .name-cell .email { font-size: 11px; color: var(--muted); }
+
+  .product-thumb { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; background: var(--bg); display: block; }
+  .thumb-placeholder { width: 38px; height: 38px; border-radius: 8px; background: var(--bg); display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 16px; }
+
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 10.5px; font-weight: 700; }
+  .badge-active { background: #E3F0E6; color: var(--primary-mid); }
+  .badge-inactive { background: var(--danger-bg); color: var(--danger); }
+  .badge-redundant { background: #FDF3E7; color: #9A6B1E; }
+  .badge-discontinued { background: #EFEFEF; color: var(--muted); }
+  .badge-verified { background: #E3F0E6; color: var(--primary-mid); }
+  .badge-needs-review { background: var(--danger-bg); color: var(--danger); }
+
+  .btn-view { padding: 6px 14px; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 7px; font-size: 11.5px; font-weight: 600; }
+  .btn-view:hover { border-color: var(--primary); color: var(--primary); }
+
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 18px; }
+  .page-btn { width: 30px; height: 30px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); font-size: 12.5px; color: var(--text); display: flex; align-items: center; justify-content: center; }
+  .page-btn:hover { border-color: var(--primary); }
+  .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 13px; }
+
+  /* ---------- Detail panels ---------- */
+  .detail-card { background: var(--surface); border-radius: 16px; padding: 28px; max-width: 460px; box-shadow: 0 4px 16px rgba(34,58,44,0.05); }
+  .detail-header { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+  .detail-avatar { width: 56px; height: 56px; border-radius: 99px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; }
+  .detail-thumb { width: 72px; height: 72px; border-radius: 12px; object-fit: cover; background: var(--bg); }
+  .detail-header .name { font-size: 16px; font-weight: 700; color: var(--primary-dark); }
+  .detail-header .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .detail-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .detail-row:last-of-type { border-bottom: none; }
+  .detail-row .k { color: var(--muted); }
+  .detail-row .v { font-weight: 600; text-align: right; max-width: 60%; }
+  .detail-section-title { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.4px; margin: 18px 0 6px; }
+  .detail-actions { display: flex; gap: 10px; margin-top: 22px; }
+  .btn-outline { flex: 1; padding: 11px 0; background: transparent; border: 1px solid var(--line); color: var(--text); border-radius: 9px; font-size: 13px; font-weight: 600; }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-danger-fill { flex: 1; padding: 11px 0; background: var(--danger); color: white; border-radius: 9px; font-size: 13px; font-weight: 600; }
+  .btn-danger-fill:hover { opacity: 0.9; }
+  .btn-primary-fill { flex: 1; padding: 11px 0; background: var(--primary); color: white; border-radius: 9px; font-size: 13px; font-weight: 600; }
+  .btn-primary-fill:hover { background: var(--primary-mid); }
+
+  /* ---------- Form ---------- */
+  .form-card { background: var(--surface); border-radius: 16px; padding: 28px; max-width: 480px; box-shadow: 0 4px 16px rgba(34,58,44,0.05); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+  .form-grid .full { grid-column: 1 / -1; }
+  textarea { width: 100%; padding: 11px 13px; border: 1px solid var(--line); border-radius: 9px; font-size: 13px; resize: vertical; min-height: 56px; background: var(--bg); }
+  .upload-box { border: 1.5px dashed var(--line); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; background: var(--bg); margin-bottom: 4px; }
+  .upload-box:hover { border-color: var(--primary); }
+  .upload-box img { max-width: 100%; max-height: 110px; border-radius: 8px; margin-bottom: 8px; }
+  .upload-box .hint-text { font-size: 11.5px; color: var(--muted); }
+  .form-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+  /* ---------- Modal (confirm dialogs) ---------- */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(34,58,44,0.45); align-items: center; justify-content: center; padding: 20px; z-index: 60; }
+  .confirm-modal { background: var(--surface); border-radius: 16px; padding: 30px 28px; width: 100%; max-width: 360px; text-align: center; }
+  .confirm-icon { width: 54px; height: 54px; border-radius: 99px; background: var(--danger-bg); color: var(--danger); display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 16px; }
+  .confirm-icon.neutral { background: #FDF3E7; color: #9A6B1E; }
+  .confirm-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .confirm-msg { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 22px; }
+  .confirm-actions { display: flex; gap: 10px; }
+
+  .form-error { font-size: 12px; color: var(--danger); margin-top: 10px; display: none; }
+
+  @media (max-width: 760px) {
+    .shell { flex-direction: column; }
+    .sidebar { width: 100%; flex-direction: row; align-items: center; padding: 12px 16px; overflow-x: auto; }
+    .sidebar-brand { padding: 0; margin-right: 12px; }
+    .nav-item span.label { display: none; }
+    .sidebar-footer { margin-top: 0; padding-top: 0; border: none; margin-left: auto; }
+    .main { padding: 18px; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-mark">✦</div>
+    <h1>SKINALYTIX</h1>
+    <div class="sub">Administrator Login</div>
+
+    <div class="field">
+      <label>API Base URL</label>
+      <input id="apiBaseUrl" type="text" placeholder="http://10.0.1.200:8000">
+    </div>
+    <div class="field">
+      <label>Email / Username</label>
+      <input id="adminUsername" type="text" placeholder="admin">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input id="adminPassword" type="password" placeholder="••••••••">
+    </div>
+
+    <button class="btn-primary" onclick="handleLogin()">Log In</button>
+    <a class="forgot-link" onclick="alert('Please contact your system administrator to reset your password.')">Forgot Password?</a>
+    <p class="error-text" id="loginError"></p>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD SHELL ============ -->
+<div id="dashboard">
+  <div class="shell">
+    <div class="sidebar">
+      <div class="sidebar-brand">
+        <div class="mark">✦</div>
+        <div><div class="t1">SKINALYTIX</div><div class="t2">ADMIN</div></div>
+      </div>
+      <button class="nav-item active" id="nav-dashboard" onclick="goTo('dashboard')"><span>🏠</span><span class="label">Dashboard</span></button>
+      <button class="nav-item" id="nav-users" onclick="goTo('usersList')"><span>👤</span><span class="label">User Management</span></button>
+      <button class="nav-item" id="nav-products" onclick="goTo('productsList')"><span>🧴</span><span class="label">OTC Product Management</span></button>
+      <button class="nav-item" id="nav-settings" onclick="goTo('settings')"><span>⚙️</span><span class="label">Settings</span></button>
+      <div class="sidebar-footer">
+        <button class="nav-item" onclick="confirmLogout()"><span>↪</span><span class="label">Logout</span></button>
+      </div>
+    </div>
+
+    <div class="main" id="mainContent"></div>
+  </div>
+</div>
+
+<!-- ============ CONFIRM MODAL (reused for deactivate/remove/logout) ============ -->
+<div class="modal-overlay" id="confirmOverlay">
+  <div class="confirm-modal">
+    <div class="confirm-icon" id="confirmIcon">!</div>
+    <div class="confirm-title" id="confirmTitle">Are you sure?</div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-actions">
+      <button class="btn-outline" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-danger-fill" id="confirmActionBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let API_BASE = '';
+let allUsers = [], allProducts = [];
+let usersPage = 1, productsPage = 1;
+const PAGE_SIZE = 5;
+let userSearch = '', productSearch = '';
+let uploadedImageUrl = null;
+let editingProductId = null;
+
+window.onload = () => {
+  const saved = localStorage.getItem('skinalytix_admin_api');
+  if (saved) document.getElementById('apiBaseUrl').value = saved;
+};
+
+// ================= AUTH =================
+async function handleLogin() {
+  const base = document.getElementById('apiBaseUrl').value.trim().replace(/\/$/, '');
+  const username = document.getElementById('adminUsername').value.trim();
+  const password = document.getElementById('adminPassword').value;
+  const errorEl = document.getElementById('loginError');
+  errorEl.style.display = 'none';
+
+  if (!base || !username || !password) {
+    errorEl.textContent = 'Please fill in all fields.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch(`${base}/admin/login`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errorEl.textContent = data.detail || 'Login failed.';
+      errorEl.style.display = 'block';
+      return;
+    }
+    API_BASE = base;
+    localStorage.setItem('skinalytix_admin_api', base);
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    goTo('dashboard');
+  } catch (e) {
+    errorEl.textContent = 'Could not reach the server. Check the API URL and that your backend is running.';
+    errorEl.style.display = 'block';
+  }
+}
+
+function doLogout() {
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('adminPassword').value = '';
+  closeConfirm();
+}
+
+function confirmLogout() {
+  showConfirm({
+    icon: '↪', neutral: true, title: 'Logout',
+    msg: 'Are you sure you want to log out?',
+    actionLabel: 'Log Out', actionColor: 'var(--danger)',
+    onConfirm: doLogout,
+  });
+}
+
+// ================= NAV / ROUTING =================
+function setActiveNav(section) {
+  ['dashboard','users','products','settings'].forEach(s => {
+    document.getElementById(`nav-${s}`)?.classList.toggle('active', section === s);
+  });
+}
+
+function goTo(view, param) {
+  const section = view.startsWith('user') ? 'users' : view.startsWith('product') ? 'products' : view;
+  setActiveNav(section);
+
+  if (view === 'dashboard') { renderDashboard(); }
+  else if (view === 'usersList') { renderUsersList(); }
+  else if (view === 'userDetail') { renderUserDetail(param); }
+  else if (view === 'userEdit') { renderUserEdit(param); }
+  else if (view === 'productsList') { renderProductsList(); }
+  else if (view === 'productDetail') { renderProductDetail(param); }
+  else if (view === 'productForm') { renderProductForm(param); }
+  else if (view === 'settings') { renderSettings(); }
+}
+
+// ================= DASHBOARD =================
+async function renderDashboard() {
+  const main = document.getElementById('mainContent');
+  main.innerHTML = `<div class="page-title">Welcome, Admin!</div><div class="page-sub">Here's what's happening with SKINALYTIX today.</div><div id="statsArea"><p class="empty-state">Loading…</p></div>`;
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/stats`);
+    const s = await res.json();
+    const pctActive = s.total_users ? Math.round((s.active_users / s.total_users) * 100) : 0;
+
+    document.getElementById('statsArea').innerHTML = `
+      <div class="stat-grid">
+        <div class="stat-card"><div class="label">Total Users</div><div class="value">${s.total_users}</div><div class="sub">${s.active_users} active</div></div>
+        <div class="stat-card"><div class="label">Total Products</div><div class="value">${s.total_products}</div><div class="sub">${s.active_products} active</div></div>
+        <div class="stat-card"><div class="label">Active Users</div><div class="value">${s.active_users}</div><div class="sub">${pctActive}% of total</div></div>
+        <div class="stat-card"><div class="label">Recent Registrations</div><div class="value">${s.recent_registrations}</div><div class="sub">last 7 days</div></div>
+      </div>
+      <div class="quick-actions">
+        <h3>Quick Actions</h3>
+        <button onclick="goTo('usersList')">👤 Manage Users</button>
+        <button onclick="goTo('productsList')">🧴 Manage Products</button>
+      </div>
+    `;
+  } catch (e) {
+    document.getElementById('statsArea').innerHTML = '<div class="empty-state">Could not load dashboard stats.</div>';
+  }
+}
+
+// ================= USERS LIST =================
+async function renderUsersList() {
+  const main = document.getElementById('mainContent');
+  main.innerHTML = `
+    <div class="page-title">User Management</div>
+    <div class="page-sub">View, edit, or deactivate registered SKINALYTIX accounts.</div>
+    <div class="toolbar">
+      <div class="search-box"><span class="icon">🔍</span><input id="userSearchInput" placeholder="Search by name or email..." oninput="userSearch=this.value; usersPage=1; drawUsersTable();"></div>
+    </div>
+    <div id="usersTableWrap"></div>
+  `;
+  try {
+    const res = await fetch(`${API_BASE}/admin/users`);
+    allUsers = await res.json();
+    drawUsersTable();
+  } catch (e) {
+    document.getElementById('usersTableWrap').innerHTML = '<div class="empty-state">Could not load users.</div>';
+  }
+}
+
+function drawUsersTable() {
+  const wrap = document.getElementById('usersTableWrap');
+  const filtered = allUsers.filter(u =>
+    u.full_name.toLowerCase().includes(userSearch.toLowerCase()) ||
+    u.email.toLowerCase().includes(userSearch.toLowerCase())
+  );
+
+  if (!filtered.length) {
+    wrap.innerHTML = '<div class="empty-state">No users found.</div>';
+    return;
+  }
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  usersPage = Math.min(usersPage, totalPages) || 1;
+  const pageItems = filtered.slice((usersPage - 1) * PAGE_SIZE, usersPage * PAGE_SIZE);
+
+  const rows = pageItems.map(u => `
+    <tr>
+      <td><div class="name-cell"><div class="avatar-circle">${initials(u.full_name)}</div><div><div>${escapeHtml(u.full_name)}</div><div class="email">${escapeHtml(u.email)}</div></div></div></td>
+      <td>${u.age}</td>
+      <td>${formatDate(u.created_at)}</td>
+      <td><span class="badge badge-${u.status === 'active' ? 'active' : 'inactive'}">${u.status === 'active' ? 'Active' : 'Inactive'}</span></td>
+      <td><button class="btn-view" onclick="goTo('userDetail', ${u.user_id})">View</button></td>
+    </tr>
+  `).join('');
+
+  wrap.innerHTML = `
+    <table>
+      <thead><tr><th>User</th><th>Age</th><th>Registered</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    ${buildPagination(totalPages, usersPage, 'users')}
+  `;
+}
+
+// ================= USER DETAIL =================
+function renderUserDetail(userId) {
+  const u = allUsers.find(x => x.user_id === userId);
+  const main = document.getElementById('mainContent');
+  if (!u) { main.innerHTML = '<div class="empty-state">User not found.</div>'; return; }
+
+  main.innerHTML = `
+    <button class="back-link" onclick="goTo('usersList')">← Back to User Management</button>
+    <div class="page-title">User Information</div>
+    <div class="page-sub" style="margin-bottom:18px;"></div>
+    <div class="detail-card">
+      <div class="detail-header">
+        <div class="detail-avatar">${initials(u.full_name)}</div>
+        <div>
+          <div class="name">${escapeHtml(u.full_name)}</div>
+          <div class="sub">${escapeHtml(u.email)}</div>
+          <span class="badge badge-${u.status === 'active' ? 'active' : 'inactive'}" style="margin-top:4px; display:inline-block;">${u.status === 'active' ? 'Active' : 'Inactive'}</span>
+        </div>
+      </div>
+      <div class="detail-row"><span class="k">Age</span><span class="v">${u.age}</span></div>
+      <div class="detail-row"><span class="k">Sex</span><span class="v">${escapeHtml(u.sex || '—')}</span></div>
+      <div class="detail-row"><span class="k">Registered Date</span><span class="v">${formatDate(u.created_at)}</span></div>
+      <div class="detail-row"><span class="k">Status</span><span class="v">${u.status === 'active' ? 'Active' : 'Inactive'}</span></div>
+
+      <div class="detail-section-title">ACCOUNT INFORMATION</div>
+      <div class="detail-row"><span class="k">Phone</span><span class="v">${escapeHtml(u.phone || '—')}</span></div>
+      <div class="detail-row"><span class="k">Occupation</span><span class="v">${escapeHtml(u.occupation || '—')}</span></div>
+      <div class="detail-row"><span class="k">Location</span><span class="v">${escapeHtml(u.location || '—')}</span></div>
+
+      <div class="detail-actions">
+        <button class="btn-outline" onclick="goTo('userEdit', ${u.user_id})">Edit</button>
+        <button class="btn-danger-fill" onclick="confirmToggleUserStatus(${u.user_id})">${u.status === 'active' ? 'Deactivate' : 'Activate'}</button>
+      </div>
+    </div>
+  `;
+}
+
+function confirmToggleUserStatus(userId) {
+  const u = allUsers.find(x => x.user_id === userId);
+  const activating = u.status !== 'active';
+  showConfirm({
+    icon: activating ? '✓' : '!', neutral: activating,
+    title: activating ? 'Activate User' : 'Deactivate User',
+    msg: activating
+      ? `Reactivate "${u.full_name}"'s account?`
+      : `Are you sure you want to deactivate "${u.full_name}"'s account? They will not be able to log in while inactive.`,
+    actionLabel: activating ? 'Activate' : 'Deactivate',
+    actionColor: activating ? 'var(--primary)' : 'var(--danger)',
+    onConfirm: async () => {
+      try {
+        const res = await fetch(`${API_BASE}/admin/users/${userId}/status`, { method: 'PATCH' });
+        const updated = await res.json();
+        const idx = allUsers.findIndex(x => x.user_id === userId);
+        allUsers[idx] = updated;
+        closeConfirm();
+        renderUserDetail(userId);
+      } catch (e) { alert('Could not update status.'); }
+    },
+  });
+}
+
+// ================= USER EDIT =================
+function renderUserEdit(userId) {
+  const u = allUsers.find(x => x.user_id === userId);
+  const main = document.getElementById('mainContent');
+  if (!u) { main.innerHTML = '<div class="empty-state">User not found.</div>'; return; }
+
+  main.innerHTML = `
+    <button class="back-link" onclick="goTo('userDetail', ${userId})">← Back</button>
+    <div class="page-title">Edit User</div>
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="full"><div class="field"><label>Full Name</label><input id="e_full_name" value="${escapeAttr(u.full_name)}"></div></div>
+        <div class="full"><div class="field"><label>Email Address</label><input id="e_email" value="${escapeAttr(u.email)}"></div></div>
+        <div class="field"><label>Age</label><input id="e_age" type="number" value="${u.age}"></div>
+        <div class="field"><label>Sex</label>
+          <select id="e_sex">
+            <option value="" ${!u.sex ? 'selected' : ''}>—</option>
+            <option value="Male" ${u.sex === 'Male' ? 'selected' : ''}>Male</option>
+            <option value="Female" ${u.sex === 'Female' ? 'selected' : ''}>Female</option>
+            <option value="Prefer not to say" ${u.sex === 'Prefer not to say' ? 'selected' : ''}>Prefer not to say</option>
+          </select>
+        </div>
+        <div class="field"><label>Occupation</label><input id="e_occupation" value="${escapeAttr(u.occupation || '')}"></div>
+        <div class="field"><label>Phone Number</label><input id="e_phone" value="${escapeAttr(u.phone || '')}"></div>
+        <div class="full"><div class="field"><label>Location</label><input id="e_location" value="${escapeAttr(u.location || '')}"></div></div>
+      </div>
+      <p class="form-error" id="userEditError"></p>
+      <div class="form-footer">
+        <button class="btn-outline" style="flex:none; padding:11px 20px;" onclick="goTo('userDetail', ${userId})">Cancel</button>
+        <button class="btn-primary-fill" style="flex:none; padding:11px 24px;" onclick="saveUserEdit(${userId})">Save Changes</button>
+      </div>
+    </div>
+  `;
+}
+
+async function saveUserEdit(userId) {
+  const errorEl = document.getElementById('userEditError');
+  const body = {
+    full_name: document.getElementById('e_full_name').value.trim(),
+    email: document.getElementById('e_email').value.trim(),
+    age: parseInt(document.getElementById('e_age').value) || 0,
+    sex: document.getElementById('e_sex').value || null,
+    occupation: document.getElementById('e_occupation').value.trim() || null,
+    phone: document.getElementById('e_phone').value.trim() || null,
+    location: document.getElementById('e_location').value.trim() || null,
+  };
+  if (!body.full_name || !body.email) {
+    errorEl.textContent = 'Full name and email are required.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  try {
+    const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) { errorEl.textContent = data.detail || 'Failed to save.'; errorEl.style.display = 'block'; return; }
+    const idx = allUsers.findIndex(x => x.user_id === userId);
+    allUsers[idx] = data;
+    goTo('userDetail', userId);
+  } catch (e) {
+    errorEl.textContent = 'Could not reach the server.';
+    errorEl.style.display = 'block';
+  }
+}
+
+// ================= PRODUCTS LIST =================
+async function renderProductsList() {
+  const main = document.getElementById('mainContent');
+  main.innerHTML = `
+    <div class="page-title">OTC Product Management</div>
+    <div class="page-sub">SKINALYTIX's dermatologist-reviewed product database.</div>
+    <div class="toolbar">
+      <div class="search-box"><span class="icon">🔍</span><input id="productSearchInput" placeholder="Search products by name or brand..." oninput="productSearch=this.value; productsPage=1; drawProductsTable();"></div>
+      <button class="btn-add" onclick="goTo('productForm')">+ Add Product</button>
+    </div>
+    <div id="productsTableWrap"></div>
+  `;
+  try {
+    const res = await fetch(`${API_BASE}/admin/products`);
+    allProducts = await res.json();
+    drawProductsTable();
+  } catch (e) {
+    document.getElementById('productsTableWrap').innerHTML = '<div class="empty-state">Could not load products.</div>';
+  }
+}
+
+function drawProductsTable() {
+  const wrap = document.getElementById('productsTableWrap');
+  const filtered = allProducts.filter(p =>
+    p.product_name.toLowerCase().includes(productSearch.toLowerCase()) ||
+    p.brand.toLowerCase().includes(productSearch.toLowerCase())
+  );
+
+  if (!filtered.length) {
+    wrap.innerHTML = '<div class="empty-state">No products found.</div>';
+    return;
+  }
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  productsPage = Math.min(productsPage, totalPages) || 1;
+  const pageItems = filtered.slice((productsPage - 1) * PAGE_SIZE, productsPage * PAGE_SIZE);
+
+  const rows = pageItems.map(p => `
+    <tr>
+      <td><div class="name-cell">
+        ${p.image_url ? `<img class="product-thumb" src="${API_BASE}${p.image_url}" onerror="this.outerHTML='<div class=&quot;thumb-placeholder&quot;>🧴</div>'">` : '<div class="thumb-placeholder">🧴</div>'}
+        <div><div>${escapeHtml(p.product_name)}</div><div class="email">${escapeHtml(p.brand)}</div></div>
+      </div></td>
+      <td>${escapeHtml(p.category)}</td>
+      <td><span class="badge badge-${p.recommendation_status}">${escapeHtml(p.recommendation_status)}</span></td>
+      <td><button class="btn-view" onclick="goTo('productDetail', ${p.product_id})">View</button></td>
+    </tr>
+  `).join('');
+
+  wrap.innerHTML = `
+    <table>
+      <thead><tr><th>Product</th><th>Category</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    ${buildPagination(totalPages, productsPage, 'products')}
+  `;
+}
+
+// ================= PRODUCT DETAIL =================
+function renderProductDetail(productId) {
+  const p = allProducts.find(x => x.product_id === productId);
+  const main = document.getElementById('mainContent');
+  if (!p) { main.innerHTML = '<div class="empty-state">Product not found.</div>'; return; }
+
+  main.innerHTML = `
+    <button class="back-link" onclick="goTo('productsList')">← Back to List</button>
+    <div class="page-title">Product Details</div>
+    <div class="detail-card">
+      <div class="detail-header">
+        ${p.image_url ? `<img class="detail-thumb" src="${API_BASE}${p.image_url}" onerror="this.src=''; this.style.background='var(--bg)';">` : `<div class="detail-thumb" style="display:flex;align-items:center;justify-content:center;font-size:28px;">🧴</div>`}
+        <div>
+          <div class="name">${escapeHtml(p.product_name)}</div>
+          <div class="sub">${escapeHtml(p.category)}</div>
+          <span class="badge badge-${p.recommendation_status}" style="margin-top:4px; display:inline-block;">${escapeHtml(p.recommendation_status)}</span>
+        </div>
+      </div>
+      <div class="detail-row"><span class="k">Brand</span><span class="v">${escapeHtml(p.brand)}</span></div>
+      <div class="detail-row"><span class="k">Validation</span><span class="v">${escapeHtml(p.validation_status)}</span></div>
+      <div class="detail-row"><span class="k">Time of Use</span><span class="v">${(p.time_of_use || []).join(', ') || '—'}</span></div>
+      <div class="detail-section-title">DESCRIPTION</div>
+      <p style="font-size:13px; line-height:1.6; color:var(--text);">${escapeHtml(p.usage_instructions || 'No description provided.')}</p>
+      <div class="detail-section-title">KEY INGREDIENTS</div>
+      <p style="font-size:13px; line-height:1.6;">${(p.key_ingredients || []).join(', ') || '—'}</p>
+      <div class="detail-section-title">RECOMMENDED FOR</div>
+      <p style="font-size:13px; line-height:1.6;">Skin types: ${(p.skin_types || []).join(', ') || '—'}<br>Concerns: ${(p.skin_concerns || []).join(', ') || '—'}</p>
+      ${p.selection_notes ? `<div class="detail-section-title">SELECTION NOTES</div><p style="font-size:12.5px; line-height:1.6; color:var(--muted);">${escapeHtml(p.selection_notes)}</p>` : ''}
+
+      <div class="detail-actions">
+        <button class="btn-outline" onclick="goTo('productForm', ${p.product_id})">Edit</button>
+        <button class="btn-danger-fill" onclick="confirmRemoveProduct(${p.product_id})">Remove</button>
+      </div>
+    </div>
+  `;
+}
+
+function confirmRemoveProduct(productId) {
+  const p = allProducts.find(x => x.product_id === productId);
+  showConfirm({
+    icon: '!', title: 'Remove Product',
+    msg: `Are you sure you want to remove "${p.product_name}"? This action will permanently delete the product from the system.`,
+    actionLabel: 'Remove', actionColor: 'var(--danger)',
+    onConfirm: async () => {
+      try {
+        await fetch(`${API_BASE}/products/${productId}`, { method: 'DELETE' });
+        closeConfirm();
+        goTo('productsList');
+      } catch (e) { alert('Could not remove product.'); }
+    },
+  });
+}
+
+// ================= PRODUCT ADD / EDIT FORM =================
+function renderProductForm(productId) {
+  editingProductId = productId || null;
+  const p = productId ? allProducts.find(x => x.product_id === productId) : null;
+  uploadedImageUrl = p?.image_url || null;
+  const main = document.getElementById('mainContent');
+
+  main.innerHTML = `
+    <button class="back-link" onclick="${p ? `goTo('productDetail', ${productId})` : `goTo('productsList')`}">← Back</button>
+    <div class="page-title">${p ? 'Edit Product' : 'Add New Product'}</div>
+    <div class="form-card">
+      <label style="font-size:11.5px; color:var(--muted); display:block; margin-bottom:6px;">Product Image</label>
+      <div class="upload-box" onclick="document.getElementById('imageFileInput').click()">
+        <div id="uploadPreviewArea">
+          ${uploadedImageUrl ? `<img src="${API_BASE}${uploadedImageUrl}">` : ''}
+          <div class="hint-text">${uploadedImageUrl ? 'Tap to change image' : 'Tap to upload image (JPG, PNG)'}</div>
+        </div>
+      </div>
+      <input type="file" id="imageFileInput" accept="image/*" style="display:none;" onchange="handleImageUpload(event)">
+
+      <div class="form-grid" style="margin-top:16px;">
+        <div class="full"><div class="field"><label>Product Name</label><input id="f_product_name" value="${escapeAttr(p?.product_name || '')}"></div></div>
+        <div class="field"><label>Category</label><input id="f_category" value="${escapeAttr(p?.category || '')}" placeholder="Cleanser, Serum, Sunscreen..."></div>
+        <div class="field"><label>Brand</label><input id="f_brand" value="${escapeAttr(p?.brand || '')}"></div>
+        <div class="full"><div class="field"><label>Description</label><textarea id="f_usage_instructions">${escapeHtml(p?.usage_instructions || '')}</textarea></div></div>
+        <div class="full"><div class="field"><label>Key Ingredients (comma-separated)</label><input id="f_key_ingredients" value="${escapeAttr((p?.key_ingredients || []).join(', '))}"></div></div>
+        <div class="full"><div class="field"><label>Skin Types (comma-separated)</label><input id="f_skin_types" value="${escapeAttr((p?.skin_types || []).join(', '))}"></div></div>
+        <div class="full"><div class="field"><label>Skin Concerns (comma-separated)</label><input id="f_skin_concerns" value="${escapeAttr((p?.skin_concerns || []).join(', '))}"></div></div>
+        <div class="field"><label>Time of Use (comma-separated)</label><input id="f_time_of_use" value="${escapeAttr((p?.time_of_use || []).join(', '))}" placeholder="AM, PM"></div>
+        <div class="field"><label>Status</label>
+          <select id="f_recommendation_status">
+            <option value="active" ${p?.recommendation_status === 'active' ? 'selected' : ''}>active</option>
+            <option value="redundant" ${p?.recommendation_status === 'redundant' ? 'selected' : ''}>redundant</option>
+            <option value="discontinued" ${p?.recommendation_status === 'discontinued' ? 'selected' : ''}>discontinued</option>
+          </select>
+        </div>
+        <div class="full"><div class="field"><label>Selection Notes</label><textarea id="f_selection_notes">${escapeHtml(p?.selection_notes || '')}</textarea></div></div>
+        <div class="field"><label>Ingredient Overlap Group</label><input id="f_ingredient_overlap_group" value="${escapeAttr(p?.ingredient_overlap_group || '')}"></div>
+        <div class="field"><label>Validation Status</label>
+          <select id="f_validation_status">
+            <option ${p?.validation_status !== 'Needs verification' ? 'selected' : ''}>Dermatologist-reviewed</option>
+            <option ${p?.validation_status === 'Needs verification' ? 'selected' : ''}>Needs verification</option>
+          </select>
+        </div>
+      </div>
+      <p class="form-error" id="productFormError"></p>
+      <div class="form-footer">
+        <button class="btn-outline" style="flex:none; padding:11px 20px;" onclick="${p ? `goTo('productDetail', ${productId})` : `goTo('productsList')`}">Cancel</button>
+        <button class="btn-primary-fill" style="flex:none; padding:11px 24px;" onclick="saveProductForm()">${p ? 'Update Product' : 'Save Product'}</button>
+      </div>
+    </div>
+  `;
+}
+
+async function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const previewArea = document.getElementById('uploadPreviewArea');
+  previewArea.innerHTML = '<div class="hint-text">Uploading…</div>';
+
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await fetch(`${API_BASE}/admin/products/upload-image`, { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) { previewArea.innerHTML = '<div class="hint-text">Upload failed.</div>'; return; }
+    uploadedImageUrl = data.image_url;
+    previewArea.innerHTML = `<img src="${API_BASE}${uploadedImageUrl}"><div class="hint-text">Tap to change image</div>`;
+  } catch (e) {
+    previewArea.innerHTML = '<div class="hint-text">Upload failed. Check your connection.</div>';
+  }
+}
+
+function splitList(val) { return val.split(',').map(s => s.trim()).filter(Boolean); }
+
+async function saveProductForm() {
+  const errorEl = document.getElementById('productFormError');
+  const brand = document.getElementById('f_brand').value.trim();
+  const productName = document.getElementById('f_product_name').value.trim();
+  const category = document.getElementById('f_category').value.trim();
+
+  if (!brand || !productName || !category) {
+    errorEl.textContent = 'Product name, brand, and category are required.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  const body = {
+    brand, product_name: productName, category,
+    image_url: uploadedImageUrl,
+    skin_types: splitList(document.getElementById('f_skin_types').value),
+    skin_concerns: splitList(document.getElementById('f_skin_concerns').value),
+    key_ingredients: splitList(document.getElementById('f_key_ingredients').value),
+    time_of_use: splitList(document.getElementById('f_time_of_use').value),
+    usage_instructions: document.getElementById('f_usage_instructions').value.trim() || null,
+    selection_notes: document.getElementById('f_selection_notes').value.trim() || null,
+    ingredient_overlap_group: document.getElementById('f_ingredient_overlap_group').value.trim() || null,
+    validation_status: document.getElementById('f_validation_status').value,
+    recommendation_status: document.getElementById('f_recommendation_status').value,
+  };
+
+  try {
+    const url = editingProductId ? `${API_BASE}/products/${editingProductId}` : `${API_BASE}/products/`;
+    const method = editingProductId ? 'PUT' : 'POST';
+    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (!res.ok) { errorEl.textContent = data.detail || 'Failed to save product.'; errorEl.style.display = 'block'; return; }
+
+    const idx = allProducts.findIndex(x => x.product_id === data.product_id);
+    if (idx >= 0) allProducts[idx] = data; else allProducts.push(data);
+    goTo('productDetail', data.product_id);
+  } catch (e) {
+    errorEl.textContent = 'Could not reach the server.';
+    errorEl.style.display = 'block';
+  }
+}
+
+// ================= SETTINGS (placeholder) =================
+function renderSettings() {
+  document.getElementById('mainContent').innerHTML = `
+    <div class="page-title">Settings</div>
+    <div class="page-sub">Account and system preferences.</div>
+    <div class="detail-card"><p style="font-size:13px; color:var(--muted);">Settings options coming soon.</p></div>
+  `;
+}
+
+// ================= CONFIRM MODAL ================= 
+let pendingConfirmAction = null;
+function showConfirm({ icon, title, msg, actionLabel, actionColor, neutral, onConfirm }) {
+  document.getElementById('confirmIcon').textContent = icon;
+  document.getElementById('confirmIcon').classList.toggle('neutral', !!neutral);
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  const btn = document.getElementById('confirmActionBtn');
+  btn.textContent = actionLabel;
+  btn.style.background = actionColor || 'var(--danger)';
+  pendingConfirmAction = onConfirm;
+  btn.onclick = () => pendingConfirmAction && pendingConfirmAction();
+  document.getElementById('confirmOverlay').style.display = 'flex';
+}
+function closeConfirm() { document.getElementById('confirmOverlay').style.display = 'none'; }
+
+// ================= UTILITIES =================
+function initials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(' ');
+  return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase();
+}
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+function buildPagination(totalPages, current, which) {
+  if (totalPages <= 1) return '';
+  let btns = '';
+  for (let i = 1; i <= totalPages; i++) {
+    btns += `<button class="page-btn ${i === current ? 'active' : ''}" onclick="goToPage('${which}', ${i})">${i}</button>`;
+  }
+  return `<div class="pagination">${btns}</div>`;
+}
+function goToPage(which, page) {
+  if (which === 'users') { usersPage = page; drawUsersTable(); }
+  else { productsPage = page; drawProductsTable(); }
+}
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function escapeAttr(str) { return escapeHtml(str).replace(/`/g, '&#96;'); }
+</script>
+
+</body>
+</html>

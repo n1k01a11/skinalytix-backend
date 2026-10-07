@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 # The fallback (after "or") is only used for local testing.
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
-    "postgresql://postgres:YOUR_PASSWORD@localhost:5432/skinalytix",
+    "postgresql://postgres:334323D@localhost:5432/skinalytix",
 )
 
 # Render's DATABASE_URL sometimes starts with "postgres://" — SQLAlchemy needs "postgresql://"
