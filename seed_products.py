@@ -13,7 +13,7 @@ import requests
 
 # Change this if your API is running elsewhere (use your laptop's local IP
 # if you're testing this script from a different machine than the server).
-BASE_URL = "http://127.0.0.1:8000"
+BASE_URL = "https://skinalytix-api.onrender.com"
 
 PRODUCTS = [
     # ---------------- CLEANSERS ----------------
